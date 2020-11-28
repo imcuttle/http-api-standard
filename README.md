@@ -63,6 +63,52 @@ type ResponseFailBody = {
 
 ### 业务场景
 
+#### 业务 code 配置
+
+业务中涉及到的配置，前端通过统一的 lookup code 进行查询获取，而不是前端编码在代码中。
+
+如下业务配置，不应该前端单独进行维护：
+```ts
+enum COMPANY {
+  baidu = 0
+  ali = 1
+  tencent = 2
+}
+
+enum BUSSINESS {
+  电商 = 0
+  直播 = 1
+  社交 = 2
+}
+```
+
+应该通过接口获取
+
+```
+GET /api/lookup?code=["COMPANY","BUSSINESS"]
+```
+
+响应：
+```json5
+{
+  status: 'ok',
+  data: {
+    COMPANY: {
+      baidu: 0,
+      ali: 1,
+      tercent: 2
+    },
+    BUSSINESS: {
+      电商: 0,
+      直播: 1,
+      社交: 2
+    }
+  }
+}
+```
+
+
+
 #### 分页
 
 ```json5
@@ -75,7 +121,9 @@ type ResponseFailBody = {
       // 全量数据数量
       total: 100,
       // 单页数据数量
-      size: 10
+      size: 10,
+      // 是否后续还有数据，用于滚动异步加载
+      hasMore: true
     },
     list: [...]
   }
@@ -85,4 +133,11 @@ type ResponseFailBody = {
 
 ## 其他通用
 
+### 请求头
+
 关于请求头，响应头中业务自定义的扩展，必须以 `x-` 开头，如 `x-user-id`
+
+### long / bigInt 类型
+
+由于 JS 存储数字精度问题，遇到 long / bigInt 类型 数字类型，需要后台输出转换为字符串类型，前端请求入参也应该传递为字符串。  
+如 `213131232131232132` 需要传递 `'213131232131232132'`
